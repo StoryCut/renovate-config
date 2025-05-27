@@ -116,7 +116,6 @@
 
       // Create PRs after at least 3 days has passed, since npm packages can be un-published within 72 hours
       minimumReleaseAge: 3,
-      prCreation: "not-pending", // See NOTE(prCreation)
     },
 
     {
@@ -126,7 +125,6 @@
 
       // Wait a medium number of days before creating the PRs
       minimumReleaseAge: 5,
-      prCreation: "not-pending", // See NOTE(prCreation)
     },
 
     {
@@ -136,7 +134,6 @@
 
       // Wait a good long number of days before creating the PRs
       minimumReleaseAge: 8,
-      prCreation: "not-pending", // See NOTE(prCreation)
     },
   ],
 }
