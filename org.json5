@@ -16,12 +16,4 @@
 
   // Set the timezone for schedules
   timezone: "America/Los_Angeles",
-
-  // Always run off latest main to ensure CI is run against the latest code
-  // Limit to 1 concurrent PR to avoid re-triggering CI for every rebase
-  rebaseWhen: "behind-base-branch",
-  prConcurrentLimit: 1,
-
-  // Enable lockfile maintenance. The schedule and priority are configured further down
-  lockFileMaintenance: { enabled: true },
 }
