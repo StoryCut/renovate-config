@@ -42,6 +42,14 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
 
+  // Always run off latest main to ensure CI is run against the latest code
+  // Limit to 1 concurrent PR to avoid re-triggering CI for every rebase
+  rebaseWhen: "behind-base-branch",
+  prConcurrentLimit: 1,
+
+  // Enable lockfile maintenance. The schedule and priority are configured elsewhere
+  lockFileMaintenance: { enabled: true },
+
   packageRules: [
     {
       // Effect ecosystem packages should be grouped
