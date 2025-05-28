@@ -53,7 +53,7 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
 
   rebaseWhen: "behind-base-branch", // Always run off latest main to ensure CI is run against the latest code
-  branchConcurrentLimit: 5, // Allow multiple branches to run concurrently. When NOTE(buildAllBranches) is fixed, we can make this unlimited because CI time will not be a concern.
+  branchConcurrentLimit: 5, // Allow multiple branches to run concurrently. Currently limited to some reasonable number, since these branches will re-run every time they are rebased on top of latest main). When NOTE(buildAllBranches) is fixed, we can make this unlimited because CI time will not be a concern.
   prCreation: "not-pending", // See NOTE(prCreation). Only create PRs once minimumReleaseAge has passed
   prConcurrentLimit: 1, // Limit to 1 concurrent PR to avoid re-triggering CI for every rebase
   // See NOTE(buildAllBranches). Currently we are over-running tests because we are running against every branch
