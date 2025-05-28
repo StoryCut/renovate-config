@@ -37,6 +37,16 @@
  *   This will save a bunch of CI time, since we won't be building every branch on every push.
  *
  *   TL;DR; once we upgrade to a paid Github plan, we set CircleCI to only build PRs.
+ *
+ * NOTE(runAllDay):
+ *   Ideally, we would only accept updates overnight (to avoid churn while humans are working,
+ *   and to minimize PR distractions in the middle of the day).
+ * 
+ *   However the Renovate free tier [only runs every ~3-4 hours](https://docs.renovatebot.com/known-limitations/#the-mend-renovate-app-and-scheduled-jobs),
+ *   so overnight does not give enough time for updates to create a branch, wait for minimumReleaseAge, create a PR, run CI, and auto-merge
+ * 
+ *   While we're on the free tier, we'll just let Renovate run all day.
+ *   If/when upgrading to a paid plan, we can reinstate the overnight schedule, since Renovate will run every ~1 hour.
  */
 
 {
