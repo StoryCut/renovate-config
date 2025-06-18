@@ -21,31 +21,29 @@
  * 5. Renovate auto-merges the PR if it passes CI, or waits for manual approval, etc.
  *
  * NOTE(buildAllBranches):
- *   Because of the Vercel green status checks, Renovate thinks that CI has completed,
- *   and auto-merges immediately before CI has a chance to start running.
+ *   There is a race condition where Renovate will auto-merge immediately after
+ *   Vercel's status checks passed, before CircleCI had a chance to start running. This happened
+ *   because Renovate only saw the passed Vercel status checks and thought CI was complete.
  * 
- *   That's why we currently have CircleCI configured to build all branches (so that these
- *   status checks are already started before Renovate has a chance to auto-merge. Renovate will
- *   see the pending status checks and wait for them to pass before auto-merging).
+ *   By paying for a Github plan, we get enforced branch protection rules. We configure Github
+ *   to expect the CircleCI status checks on PRs. Even if CircleCI hasn't started running yet,
+ *   Github will show these as pending status checks that Renovate must wait for.
  *
- *   Once our Github branch protection rules get enforced (by upgrading to a paid plan),
- *   Renovate will be able to see the *expected* CircleCI status checks as pending,
- *   even if CircleCI hasn't actually started running them yet. It's just that we've configured
- *   Github to know to expect these status checks from CircleCI.
+ *   This allows us to configure CircleCI to only run once a PR has been created,
+ *   saving significant CI time by avoiding builds on every branch push.
  *
- *   Once that happens, we can set CircleCI back to only building branches once a PR has been created.
- *   This will save a bunch of CI time, since we won't be building every branch on every push.
- *
- *   TL;DR; once we upgrade to a paid Github plan, we set CircleCI to only build PRs.
- *
+ *   TL;DR; With paid Github and enforced status checks, CircleCI can be set to only build PRs.
+ *          Without the paid Github plan and enforced status checks, the race condition means that Renovate will auto-merge before CircleCI has a chance to run.
+ *          Because Renovate is configured to keep branches rebased off latest main, limiting it to only build PRs saves a ton of CI time due to rebases.
+ * 
  * NOTE(runAllDay):
- *   Ideally, we would only accept updates overnight (to avoid churn while humans are working,
- *   and to minimize PR distractions in the middle of the day).
- * 
- *   However the Renovate free tier [only runs every ~3-4 hours](https://docs.renovatebot.com/known-limitations/#the-mend-renovate-app-and-scheduled-jobs),
- *   so overnight does not give enough time for updates to create a branch, wait for minimumReleaseAge, create a PR, run CI, and auto-merge
- * 
- *   While we're on the free tier, we'll just let Renovate run all day.
+ *   Ideally, we would only accept updates overnight (to avoid churn while humans are working,	
+ *   and to minimize PR distractions in the middle of the day).	
+ * 	
+ *   However the Renovate free tier [only runs every ~3-4 hours](https://docs.renovatebot.com/known-limitations/#the-mend-renovate-app-and-scheduled-jobs),	
+ *   so overnight does not give enough time for updates to create a branch, wait for minimumReleaseAge, create a PR, run CI, and auto-merge	
+ * 	
+ *   While we're on the free tier, we'll just let Renovate run all day.	
  *   If/when upgrading to a paid plan, we can reinstate the overnight schedule, since Renovate will run every ~1 hour.
  */
 
@@ -53,10 +51,10 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
 
   rebaseWhen: "behind-base-branch", // Always run off latest main to ensure CI is run against the latest code
-  branchConcurrentLimit: 5, // Allow multiple branches to run concurrently. Currently limited to some reasonable number, since these branches will re-run every time they are rebased on top of latest main). When NOTE(buildAllBranches) is fixed, we can make this unlimited because CI time will not be a concern.
+  branchConcurrentLimit: 5, // Allow multiple branches to run concurrently. See NOTE(buildAllBranches) for more details.
   prCreation: "not-pending", // See NOTE(prCreation). Only create PRs once minimumReleaseAge has passed
   prConcurrentLimit: 1, // Limit to 1 concurrent PR to avoid re-triggering CI for every rebase
-  // See NOTE(buildAllBranches). Currently we are over-running tests because we are running against every branch
+  // See NOTE(buildAllBranches). With enforced status checks, CircleCI can be configured to only build PRs
 
   // Enable lockfile maintenance. The schedule and priority are configured elsewhere
   lockFileMaintenance: { enabled: true },
