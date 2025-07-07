@@ -59,6 +59,9 @@
   // Enable lockfile maintenance. The schedule and priority are configured elsewhere
   lockFileMaintenance: { enabled: true },
 
+  platformAutomerge: true, // Use Github's auto-merge, which is faster. If not available, this will fall back to Renovate's auto-merge.
+  platformCommit: true, // Use Github's API to create commits, which allows for commit signing
+
   packageRules: [
     {
       // Effect ecosystem packages should be grouped
