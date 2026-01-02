@@ -1,0 +1,15 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+
+  packageRules: [
+    // Disable updates to the postgres image, because we want to manually
+    // control this to always match the version Neon uses in production.
+    {
+      "matchPackageNames": ["/postgres/"],
+      "matchManagers": ["docker-compose"],
+      
+      // This should match the version of Postgres that Neon uses in production. See https://neon.com/postgresql/postgresql-administration/postgresql-version
+      "allowedVersions": "17",
+    }
+  ],
+}
