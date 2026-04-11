@@ -73,5 +73,10 @@
       matchPackageNames: ["/^next-auth$/", "/^@auth\\//"],
       groupName: "Auth.js ecosystem",
     },
+    {
+      // Remotion ecosystem packages should be grouped
+      matchPackageNames: ["/^remotion$/", "/^@remotion\\//"],
+      groupName: "Remotion ecosystem",
+    },
   ],
 }
