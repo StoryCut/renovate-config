@@ -3,9 +3,10 @@
 # setup-claude-worktree-git.sh
 #
 # Configures a per-worktree git identity so that commits made by an agent
-# (Claude Code, Codex, etc.) inside a `claude/*` branch are authored as
-# "Claude Code (<contributor>)" and signed with a dedicated SSH key —
-# NOT with the human contributor's personal GPG key.
+# (Claude Code, Codex, Multica platform agents, etc.) inside a `claude/*`
+# or `agent/*` branch are authored as "Claude Code (<contributor>)" and
+# signed with a dedicated SSH key — NOT with the human contributor's
+# personal GPG key.
 #
 # Why per-worktree config (not includeIf in ~/.gitconfig)?
 #   The repo's local `.git/config` may set `user.signingkey` to the
@@ -31,20 +32,21 @@
 #     identity without restarting the agent session.
 #
 # What this does NOT do:
-#   - Does not affect non-Claude branches (the `claude/*` check is at
-#     the top — exits early on `main`, `feature/...`, etc.).
+#   - Does not affect non-agent branches (the `claude/*` / `agent/*` check
+#     is at the top — exits early on `main`, `feature/...`, etc.).
 #   - Does not affect other repos (per-worktree config is scoped to
 #     this repo only).
 #   - Does not modify the human contributor's personal git config.
 
 set -euo pipefail
 
-# ---- 1. Bail early if not in a Claude worktree ----------------------------
-# Claude worktrees use the `claude/<name>` branch naming convention.
+# ---- 1. Bail early if not in an agent worktree ----------------------------
+# Agent worktrees use `claude/<name>` (Claude Code desktop) or
+# `agent/<agent-name>/<run-id>` (Multica platform agents) branch naming.
 # In any other branch (main, feature/*, dependabot/*, etc.) we want
 # the human contributor's normal git identity to apply.
 branch=$(git branch --show-current 2>/dev/null || true)
-if [[ "$branch" != claude/* ]]; then
+if [[ "$branch" != claude/* && "$branch" != agent/* ]]; then
   exit 0
 fi
 
