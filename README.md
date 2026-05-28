@@ -21,6 +21,23 @@ pre-commit run --all-files
 ```
 
 
+# Agent commit signing
+
+`main` requires signed commits. When you run an agent (Claude Code, etc.) inside a
+`claude/*` worktree, `scripts/setup-claude-worktree-git.sh` configures a per-worktree
+identity that signs the agent's commits with a dedicated SSH key, authored as
+`Claude Code (<you>)` — without touching your personal git config on other branches.
+
+The one-time per-machine setup (SSH signing key, `~/.gitconfig.claude`, registering the
+key on GitHub) is shared with our other repos and documented in StoryCut's guide:
+<https://github.com/StoryCut/StoryCut/blob/main/docs/dev-guides/agents-signing.md>
+
+Once that's done, run the script in a `claude/*` worktree to apply it:
+```bash
+./scripts/setup-claude-worktree-git.sh
+```
+
+
 # Commands
 
 ## Validate a config locally
