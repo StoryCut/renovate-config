@@ -116,7 +116,7 @@
       matchUpdateTypes: ["major", "minor", "patch"],
 
       // Create PRs after at least 3 days has passed, since npm packages can be un-published within 72 hours
-      minimumReleaseAge: 3,
+      minimumReleaseAge: "3 days",
     },
 
     {
@@ -125,7 +125,7 @@
       matchUpdateTypes: ["minor"],
 
       // Wait a medium number of days before creating the PRs
-      minimumReleaseAge: 5,
+      minimumReleaseAge: "5 days",
     },
 
     {
@@ -134,7 +134,7 @@
       matchUpdateTypes: ["major"],
 
       // Wait a good long number of days before creating the PRs
-      minimumReleaseAge: 8,
+      minimumReleaseAge: "8 days",
     },
   ],
 }
