@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  renovate-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      # Runs `pre-commit run --all-files`, validating every *.json5 via the
+      # renovate-config-validator hook in .pre-commit-config.yaml. The action caches
+      # ~/.cache/pre-commit (keyed on the config hash), so the bundled renovate install
+      # is reused across runs instead of re-downloaded.
+      - uses: pre-commit/action@v3.0.1
+
+  commitlint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Lint commit messages
+        run: npx --yes --package @commitlint/cli --package @commitlint/config-conventional -- commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      - name: Check commits and PR title for WIP/DNM markers
+        env:
+          # Passed via env (not inline interpolation) to avoid shell injection from a hostile PR title.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          COMMITS=$(git log "$BASE_SHA".."$HEAD_SHA" --pretty=format:"%s")
+          if echo "$COMMITS" | grep -iqE '\bwip\b|\bdnm\b'; then echo "ERROR: WIP/DNM marker in commit message(s)."; exit 1; fi
+          if echo "$PR_TITLE" | grep -iqE '\bwip\b|\bdnm\b'; then echo "ERROR: WIP/DNM marker in PR title."; exit 1; fi
+          echo "No WIP/DNM markers found."
