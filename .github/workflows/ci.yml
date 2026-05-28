@@ -17,14 +17,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: "3.x"
-      # Runs `pre-commit run --all-files`, validating every *.json5 via the
-      # renovate-config-validator hook in .pre-commit-config.yaml. The action caches
-      # ~/.cache/pre-commit (keyed on the config hash), so the bundled renovate install
-      # is reused across runs instead of re-downloaded.
-      - uses: pre-commit/action@v3.0.1
+          node-version-file: .nvmrc
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          # Caches the npm download + the extracted npx environment for the
+          # renovate validator (~300MB), so the heavy install runs once and is
+          # reused across runs. Keyed on .pre-commit-config.yaml, which pins the
+          # renovate version, so the cache only rebuilds when that version changes.
+          key: npm-renovate-${{ hashFiles('.pre-commit-config.yaml') }}
+          # On a version bump, seed from the previous cache so only the delta downloads.
+          restore-keys: npm-renovate-
+      # Validates every *.json5 one file at a time and prints a per-config status
+      # table plus failure details, using the renovate version pinned in
+      # .pre-commit-config.yaml (same as the local pre-commit hook).
+      - name: Validate Renovate configs
+        run: ./scripts/validate-renovate-configs.sh
 
   commitlint:
     if: github.event_name == 'pull_request'
@@ -36,6 +46,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          # commitlint has no lockfile to key on, so key on the Node version: the npx
+          # download is then reused across runs instead of re-fetched every time.
+          key: npm-commitlint-${{ hashFiles('.nvmrc') }}
+          restore-keys: npm-commitlint-
       - name: Lint commit messages
         run: npx --yes --package @commitlint/cli --package @commitlint/config-conventional -- commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
         env:
