@@ -37,11 +37,21 @@ auto-approves a command only when *every* part of it is independently safe, so s
 an otherwise-allowlisted command. The allowlist in [`.claude/settings.json`](./.claude/settings.json)
 covers the safe reads and the validator script; you keep prompts low by *how* you invoke things:
 
-- **Prefer the built-in `Grep` / `Glob` / `Read` tools** over shell `grep` / `find` / `cat` and
-  pipelines. They don't go through the Bash permission path, so they never prompt — and they're faster.
-- **One command per tool call — never `&&` / `;` / `|` chains.** A compound line is auto-approved only
-  if every segment independently clears, so even an all-allowlisted chain (`git add … && git commit …
-  && git log …`) prompts. Run the steps as separate calls.
+- **Prefer the built-in `Grep` / `Glob` / `Read` tools** over shell `grep` / `git grep` / `find` /
+  `cat` / `sed` / `head` and pipelines. They don't go through the Bash permission path, so they never
+  prompt — and they're faster. Concretely:
+  - `sed -n 'A,Bp' file` / `head -n N file` → `Read` with `offset` / `limit`.
+  - `grep … file` / `git grep …` → the `Grep` tool. Scope with `glob` (e.g. `**/*.json5`) and exclude
+    paths with a negated glob instead of a `| grep -v` pipe.
+  - **Reading or searching N files → one `Grep`/`Read`, never a `for f in …; do grep …; done` loop.**
+  - Drop `echo "=== … ==="` section separators and `|| echo "no matches"` fallbacks entirely — the
+    native tools label their output and report empty results for free. A stray `echo` is enough to
+    force a prompt on an otherwise-allowlisted block.
+- **One command per tool call — never `&&` / `;` / `|` / `$(…)` chains or `for`/`while` loops.** A
+  compound line is auto-approved only if every segment independently clears, so even an all-allowlisted
+  chain (`git add … && git commit … && git log …`) prompts. Run the steps as separate calls. Loops and
+  command substitution prompt structurally — reach for the native tools above instead of trying to
+  allowlist your way around it.
 - **Run the validator verbatim** — `bash scripts/validate-renovate-configs.sh`, with no env-var prefix
   (`TMPDIR=…`) and no `2>&1 | tail` / `2>/dev/null` capture wrapper. Run it bare and read the output;
   the redirect/pipe is itself what prompts.
