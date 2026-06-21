@@ -3,3 +3,6 @@
 # Claude Code
 .claude/worktrees/
 
+# Agent scratch files
+.agent-ops/
+
