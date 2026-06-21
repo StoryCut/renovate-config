@@ -59,6 +59,13 @@ covers the safe reads and the validator script; you keep prompts low by *how* yo
   redirect and prompts on *every* commit.
 - **Don't `cd` / `git -C <path>` into the worktree you're already in** — an out-of-cwd path triggers a
   prompt. The cwd already *is* the repo; run `git status`, the validator, etc. directly.
+- **Don't prefix a git subcommand with `git -c <k>=<v>` or a global flag** (`--no-pager`,
+  `-c color.ui=never`) — the leading flag defeats the `Bash(git <subcmd> *)` allowlist match and
+  prompts, and it's redundant anyway: the harness already returns uncolored, unpaged output. Run the
+  subcommand plain.
+- **Don't reach for `nvm ls` to diagnose Node state** — it's degraded/useless on the sandbox and tells
+  you nothing; it's allowlisted only as a harmless seatbelt for when it's run anyway. Node-version
+  setup is handled centrally, not per-repo.
 
 Consequential actions stay **deliberately gated** (they *should* prompt): bare `npx` (arbitrary code
 execution — only the validator *script* is allowlisted, not raw `npx`), `gh pr merge`, `gh issue
